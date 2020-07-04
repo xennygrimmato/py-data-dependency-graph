@@ -45,3 +45,33 @@ def get_deps(code):
                     ddg[var.id].add(dependency.id)
 
     return declaration_line_num_map, ddg
+
+
+def recursive_ddg(code):
+    ddg = {}
+    self_edge_set = set()
+
+    class Visitor(ast.NodeVisitor):
+        def visit_Assign(self, node):
+            identifiers = node.targets
+            for identifier in identifiers:
+                ddg[identifier.id] = set()
+                self_edge_set.add(identifier.id)
+
+            depends_on = []
+            for descendant in ast.walk(node):
+                if isinstance(descendant, ast.Name):
+                    depends_on.append(descendant)
+
+            for var in identifiers:
+                for dependency in depends_on:
+                    if var.id in self_edge_set:
+                        self_edge_set.remove(var.id)
+                        continue
+                    ddg[var.id].add(dependency.id)
+
+    mod = ast.parse(code)
+    visitor = Visitor()
+    visitor.visit(mod)
+
+    return ddg

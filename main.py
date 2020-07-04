@@ -12,5 +12,17 @@ def test(path):
     print(graph)
 
 
+def test_recursive(path):
+    code = open(path).read()
+    print(code)
+    graph = code2ddg.recursive_ddg(code)
+    # print("var: line_number map =>")
+    # print(decls)
+
+    print("variable data dependence =>")
+    print(graph)
+
+
 if __name__ == '__main__':
-    test("snippets/sample_2.py")
+    path = "snippets/sample_3.py"
+    test_recursive(path)
