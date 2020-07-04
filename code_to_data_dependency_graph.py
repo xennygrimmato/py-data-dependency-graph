@@ -44,16 +44,4 @@ def get_deps(code):
                 for dependency in depends_on:
                     ddg[var.id].add(dependency.id)
 
-    # full_graph = {
-    #     assign.targets[0].id: [
-    #         d.id for d in ast.walk(assign) if isinstance(d, ast.Name)
-    #     ]
-    #     for assign in statements
-    # }
-    # # full_graph also contains `range` and `i`. Keep only top levels var
-    # restricted = {}
-    # for var in full_graph:
-    #     restricted[var] = [d for d in full_graph[var] if d in full_graph and d != var]
-    # return restricted
-
     return declaration_line_num_map, ddg
