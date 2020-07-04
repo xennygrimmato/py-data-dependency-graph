@@ -1,6 +1,6 @@
-#Python Data Dependency Graph
+# Python Data Dependency Graph
 
-###Purposes
+### Purposes
 
 - `read-after-write` data dependency graph for variables
 - `statement-level` data dependency graph
