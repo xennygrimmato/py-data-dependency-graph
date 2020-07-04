@@ -1,3 +1,6 @@
+x = 1
+y = 2
+
 def func():
     a0 = 1
     a1 = 2
@@ -9,3 +12,6 @@ def func():
     else:
         a5 = a0 + 1
         print(a5)
+
+
+z = x + y
