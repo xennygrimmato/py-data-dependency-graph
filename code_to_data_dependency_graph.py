@@ -47,31 +47,51 @@ def get_deps(code):
     return declaration_line_num_map, ddg
 
 
-def recursive_ddg(code):
-    ddg = {}
-    self_edge_set = set()
+class MethodLevelDDGs:
+    def __init__(self, code):
+        self.parsed_ast = ast.parse(code)
 
-    class Visitor(ast.NodeVisitor):
-        def visit_Assign(self, node):
-            identifiers = node.targets
-            for identifier in identifiers:
-                ddg[identifier.id] = set()
-                self_edge_set.add(identifier.id)
+    def get_methods(self):
+        fn_nodes = []
 
-            depends_on = []
-            for descendant in ast.walk(node):
-                if isinstance(descendant, ast.Name):
-                    depends_on.append(descendant)
+        class FnVisitor(ast.NodeVisitor):
+            def visit_FunctionDef(self, node):
+                fn_nodes.append(node)
 
-            for var in identifiers:
-                for dependency in depends_on:
-                    if var.id in self_edge_set:
-                        self_edge_set.remove(var.id)
-                        continue
-                    ddg[var.id].add(dependency.id)
+        visitor = FnVisitor()
+        visitor.visit(self.parsed_ast)
+        return fn_nodes
 
-    mod = ast.parse(code)
-    visitor = Visitor()
-    visitor.visit(mod)
+    def recursive_ddg(self, fn_root_node):
+        ddg = {}
+        self_edge_set = set()
 
-    return ddg
+        class DDGVisitor(ast.NodeVisitor):
+            def visit_Assign(self, node):
+                identifiers = node.targets
+                for identifier in identifiers:
+                    ddg[identifier.id] = set()
+                    self_edge_set.add(identifier.id)
+
+                depends_on = []
+                for descendant in ast.walk(node):
+                    if isinstance(descendant, ast.Name):
+                        depends_on.append(descendant)
+
+                for var in identifiers:
+                    for dependency in depends_on:
+                        if var.id in self_edge_set:
+                            self_edge_set.remove(var.id)
+                            continue
+                        ddg[var.id].add(dependency.id)
+
+        visitor = DDGVisitor()
+        visitor.visit(fn_root_node)
+        return ddg
+
+
+def fn_ddgs(code):
+    method_level_ddgs = MethodLevelDDGs(code)
+    methods = method_level_ddgs.get_methods()
+    ddgs = {method.name: method_level_ddgs.recursive_ddg(method) for method in methods}
+    return ddgs

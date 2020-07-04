@@ -15,12 +15,10 @@ def test(path):
 def test_recursive(path):
     code = open(path).read()
     print(code)
-    graph = code2ddg.recursive_ddg(code)
-    # print("var: line_number map =>")
-    # print(decls)
+    graphs = code2ddg.fn_ddgs(code)
 
-    print("variable data dependence =>")
-    print(graph)
+    print("variable data dependence by method name =>")
+    print(graphs)
 
 
 if __name__ == '__main__':
