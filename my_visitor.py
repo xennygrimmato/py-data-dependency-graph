@@ -1,24 +1,61 @@
 import ast
 
 
-def str_node(node):
-    if isinstance(node, ast.AST):
-        fields = [(name, str_node(val)) for name, val in ast.iter_fields(node) if name not in ('left', 'right')]
-        rv = '%s(%s' % (node.__class__.__name__, ', '.join('%s=%s' % field for field in fields))
-        return rv + ')'
-    else:
-        return repr(node)
+class MyVisitor:
+    def __init__(self, path):
+        self.GLOBAL_FN = ast.FunctionDef(name='_global_')
 
+        # FunctionDef -> set(x, y) such that x reads y
+        self.fn_to_ddg_map = {self.GLOBAL_FN: set()}
+        self.fn_to_self_edge_set_map = {self.GLOBAL_FN: set()}
+        self.fn_stack = [self.GLOBAL_FN]
+        self.visited = set()
 
-def ast_visit(node, level=0):
-    print('  ' * level + str_node(node))
-    for field, value in ast.iter_fields(node):
-        if isinstance(value, list):
-            for item in value:
-                if isinstance(item, ast.AST):
-                    ast_visit(item, level=level+1)
-        elif isinstance(value, ast.AST):
-            ast_visit(value, level=level+1)
+        code = open(path).read()
+        self.tree = ast.parse(code)
 
+    def ast_visit(self, node, level=0):
+        if node in self.visited:
+            return
+        self.visited.add(node)
 
-ast_visit(ast.parse(open("snippets/sample_3.py").read()))
+        is_fn = False
+        if isinstance(node, ast.FunctionDef):
+            is_fn = True
+            self.fn_stack.append(node)
+            self.fn_to_ddg_map[node] = set()
+            self.fn_to_self_edge_set_map[node] = set()
+
+        if isinstance(node, ast.Assign):
+            lhs_identifiers = node.targets
+            current_fn = self.fn_stack[-1]
+            depends_on = []
+            for identifier in lhs_identifiers:
+                self.fn_to_self_edge_set_map[current_fn].add(identifier.id)
+            # This ast.walk() call in the loop causes the complexity to be O(n^2)
+            for descendant in ast.walk(node):
+                if isinstance(descendant, ast.Name):
+                    depends_on.append(descendant)
+            for var in lhs_identifiers:
+                for dependency in depends_on:
+                    if dependency.id in self.fn_to_self_edge_set_map[current_fn]:
+                        self.fn_to_self_edge_set_map[current_fn].remove(dependency.id)
+                        continue
+                    self.fn_to_ddg_map[current_fn].add((var.id, dependency.id))
+
+        # TODO(xennygrimmato): Add visited check for node
+        for field, value in ast.iter_fields(node):
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, ast.AST):
+                        self.ast_visit(item, level=level+1)
+            elif isinstance(value, ast.AST):
+                self.ast_visit(value, level=level+1)
+        if is_fn:
+            self.fn_stack.pop()
+
+    def construct_ddg(self):
+        self.ast_visit(self.tree)
+
+    def get_function_level_ddg(self):
+        return {fn.name: value for fn, value in self.fn_to_ddg_map.items()}
