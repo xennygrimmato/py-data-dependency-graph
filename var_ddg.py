@@ -1,5 +1,4 @@
 import ast
-import utils.ast_helpers as helpers
 
 
 class MyVisitor:

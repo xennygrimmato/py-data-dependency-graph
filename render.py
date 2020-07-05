@@ -1,6 +1,6 @@
 from sys import argv
 
-from my_visitor import MyVisitor
+from var_ddg import MyVisitor
 from graphviz import Digraph
 
 

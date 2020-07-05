@@ -1,5 +1,5 @@
 import code_to_data_dependency_graph as code2ddg
-from my_visitor import MyVisitor
+from var_ddg import MyVisitor
 
 
 def test(path):
