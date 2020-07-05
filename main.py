@@ -34,5 +34,5 @@ def test_my_visitor(path):
 
 
 if __name__ == '__main__':
-    path = "snippets/sample_3.py"
+    path = "code_to_data_dependency_graph.py"
     test_my_visitor(path)

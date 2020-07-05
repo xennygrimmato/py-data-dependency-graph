@@ -1,4 +1,5 @@
 import ast
+import utils.ast_helpers as helpers
 
 
 class MyVisitor:
@@ -27,16 +28,29 @@ class MyVisitor:
             self.fn_to_self_edge_set_map[node] = set()
 
         if isinstance(node, ast.Assign):
-            lhs_identifiers = node.targets
+            lhs_ids = []
             current_fn = self.fn_stack[-1]
             depends_on = []
-            for identifier in lhs_identifiers:
-                self.fn_to_self_edge_set_map[current_fn].add(identifier.id)
+            for identifier in node.targets:
+                if isinstance(identifier, ast.Attribute):
+                    lhs_ids.append(identifier.value)
+                    self.fn_to_self_edge_set_map[current_fn].add(identifier.value.id)
+                elif isinstance(identifier, ast.Subscript):
+                    lhs_ids.append(identifier.value)
+                    self.fn_to_self_edge_set_map[current_fn].add(identifier.value.id)
+                elif isinstance(identifier, ast.Tuple):
+                    for elt in identifier.elts:
+                        lhs_ids.append(elt)
+                        self.fn_to_self_edge_set_map[current_fn].add(elt.id)
+                else:
+                    lhs_ids.append(identifier)
+                    self.fn_to_self_edge_set_map[current_fn].add(identifier.id)
+
             # This ast.walk() call in the loop causes the complexity to be O(n^2)
-            for descendant in ast.walk(node):
+            for descendant in ast.walk(node.value):
                 if isinstance(descendant, ast.Name):
                     depends_on.append(descendant)
-            for var in lhs_identifiers:
+            for var in lhs_ids:
                 for dependency in depends_on:
                     if dependency.id in self.fn_to_self_edge_set_map[current_fn]:
                         self.fn_to_self_edge_set_map[current_fn].remove(dependency.id)
