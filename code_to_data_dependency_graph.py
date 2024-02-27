@@ -90,7 +90,7 @@ class MethodLevelDDGs:
         return ddg
 
 
-def fn_ddgs(code):
+def fn_ddgs(code: str) -> Dict[str, Dict[str, Set[str]]]:
     method_level_ddgs = MethodLevelDDGs(code)
     methods = method_level_ddgs.get_methods()
     ddgs = {method.name: method_level_ddgs.recursive_ddg(method) for method in methods}
