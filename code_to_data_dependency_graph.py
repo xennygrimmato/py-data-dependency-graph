@@ -1,13 +1,13 @@
 import ast
 
 
-def get_deps(code):
+def get_deps(code: str) -> Tuple[Dict[str, int], Dict[str, Set[str]]]:
     body = ast.parse(code)
     _, statements = next(ast.iter_fields(body))
 
     # Line no. at which each identifier was first seen
-    declaration_line_num_map = {}
-    ddg = {}
+    declaration_line_num_map: Dict[str, int] = {}
+    ddg: Dict[str, Set[str]] = {}
 
     def update_decls(lhs_vars_input, num):
         lhs_var_nodes = []
