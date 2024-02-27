@@ -1,13 +1,13 @@
 import ast
 
 
-def get_deps(code):
+def get_deps(code: str) -> Tuple[Dict[str, int], Dict[str, Set[str]]]:
     body = ast.parse(code)
     _, statements = next(ast.iter_fields(body))
 
     # Line no. at which each identifier was first seen
-    declaration_line_num_map = {}
-    ddg = {}
+    declaration_line_num_map: Dict[str, int] = {}
+    ddg: Dict[str, Set[str]] = {}
 
     def update_decls(lhs_vars_input, num):
         lhs_var_nodes = []
@@ -51,7 +51,7 @@ class MethodLevelDDGs:
     def __init__(self, code):
         self.parsed_ast = ast.parse(code)
 
-    def get_methods(self):
+    def get_methods(self) -> List[ast.FunctionDef]:
         fn_nodes = []
 
         class FnVisitor(ast.NodeVisitor):
@@ -90,7 +90,7 @@ class MethodLevelDDGs:
         return ddg
 
 
-def fn_ddgs(code):
+def fn_ddgs(code: str) -> Dict[str, Dict[str, Set[str]]]:
     method_level_ddgs = MethodLevelDDGs(code)
     methods = method_level_ddgs.get_methods()
     ddgs = {method.name: method_level_ddgs.recursive_ddg(method) for method in methods}
