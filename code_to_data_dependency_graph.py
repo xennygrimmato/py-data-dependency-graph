@@ -51,7 +51,7 @@ class MethodLevelDDGs:
     def __init__(self, code):
         self.parsed_ast = ast.parse(code)
 
-    def get_methods(self):
+    def get_methods(self) -> List[ast.FunctionDef]:
         fn_nodes = []
 
         class FnVisitor(ast.NodeVisitor):
