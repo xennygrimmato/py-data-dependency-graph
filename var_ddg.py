@@ -47,6 +47,13 @@ class MyVisitor:
 
             # This ast.walk() call in the loop causes the complexity to be O(n^2)
             for descendant in ast.walk(node.value):
+        """
+        Visits nodes in the AST recursively to construct the DDG.
+
+        Args:
+            node (ast.AST): The current node being visited.
+            level (int): The current level of depth in the AST.
+        """
                 if isinstance(descendant, ast.Name):
                     depends_on.append(descendant)
             for var in lhs_ids:
