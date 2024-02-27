@@ -2,6 +2,17 @@ import ast
 
 
 def get_deps(code):
+    """Extracts dependencies from a block of code.
+
+    This function analyzes the given code to extract its Data Dependency Graph (DDG) and the declaration line number map. It parses the code,
+    identifies variables, and tracks the dependencies between them.
+
+    Args:
+        code (str): The source code to analyze.
+
+    Returns:
+        tuple: A tuple containing the declaration line number map (dict) and the DDG (dict).
+    """
     body = ast.parse(code)
     _, statements = next(ast.iter_fields(body))
 
@@ -63,6 +74,17 @@ class MethodLevelDDGs:
         return fn_nodes
 
     def recursive_ddg(self, fn_root_node):
+        """Recursively builds the DDG for a given function root node.
+
+        This method visits each assignment within the function and constructs the DDG by tracking variables and their dependencies. It handles
+        embedded function definitions and variable scopes within the method.
+
+        Args:
+            fn_root_node (ast.FunctionDef): The root AST node of the function to analyze.
+
+        Returns:
+            dict: The constructed DDG.
+        """
         ddg = {}
         self_edge_set = set()
 
