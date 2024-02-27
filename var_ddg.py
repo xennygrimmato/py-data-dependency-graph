@@ -2,7 +2,7 @@ import ast
 
 
 class MyVisitor:
-    def __init__(self, path):
+    def __init__(self, path: str):
         self.GLOBAL_FN = ast.FunctionDef(name='_global_')
 
         # FunctionDef -> set(x, y) such that x reads y
@@ -67,8 +67,10 @@ class MyVisitor:
         if is_fn:
             self.fn_stack.pop()
 
-    def construct_ddg(self):
+    def construct_ddg(self) -> None:
         self.ast_visit(self.tree)
 
     def get_function_level_ddg(self):
+        return {fn.name: value for fn, value in self.fn_to_ddg_map.items()}
+    def get_function_level_ddg(self) -> Dict[ast.FunctionDef, Set[Tuple[str, str]]]:
         return {fn.name: value for fn, value in self.fn_to_ddg_map.items()}
